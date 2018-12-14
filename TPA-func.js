@@ -1,8 +1,12 @@
+// Set currnet date
+var curDate = new Date();
+curDate = curDate.getDate()+"-"+(curDate.getMonth()+1)+"-"+curDate.getFullYear();
+
 UIDs = {
    0x000000: 0,
    0x1f1f1f: 1
 }
-GroupData = {
+groupData = {
    "names": [
        "Ерохин",
        "Петунина"
@@ -11,7 +15,7 @@ GroupData = {
 	   2,3
    ],
    "dates": {
-       "13-12-18": {
+       "14-12-2018": {
 	       "ATT":[0,0],
 	       "BON":[5,5],
 	       "MO":[0,5]
@@ -19,10 +23,12 @@ GroupData = {
    }
 }
 
-curDate = "13-12-18";
+// Set attendance counting til button is pressed
+var attendInterval = setInterval(function(){addAtt()}, 1000);
 
 function wait4NFC() {
-	return 0x1f1f1f;
+	var x = prompt("Enter UID", 0x000000);
+	return Number(x);
 }
 
 function retID() {
@@ -30,12 +36,29 @@ function retID() {
 }
 
 function addValue(COLTYPE,VALUE){
-	GroupData.dates[curDate][COLTYPE][retID()] = VALUE;
+	groupData.dates[curDate][COLTYPE][retID()] = VALUE;
 	updateScreen();
 }
 
 function updateScreen(){
-	document.getElementById('testScreen').innerHTML = JSON.stringify(GroupData);
+	var studSum = 0;
+	var elemYes = document.getElementById('attendYes'); 
+	var elemNo = document.getElementById('attendNo');
+	elemYes.innerHTML = '';
+	elemNo.innerHTML = '';
+	groupData.dates[curDate]["ATT"].forEach( function(item, i, arr) {
+		if(item || item==-1) {
+			var name = groupData.names[i]
+			if(item==-1) name+="(оп)";
+			elemYes.innerHTML += '<tr><td>'+name+'</td><td>'+groupData.curBonus[i]+'</td><td>'+groupData.dates[curDate]["BON"][i]+'</td><td>'+groupData.dates[curDate]["MO"][i]+'</td></tr>';
+			studSum++;
+		}						
+		else if(!item) {
+			elemNo.innerHTML += ('<tr><td>'+groupData.names[i]+'</td><td></td><td></td><td></td></tr>');
+		}
+	})
+	// Вставлено в конце, чтобы счетчик работал
+	elemYes.innerHTML = '<tr><th width="50%">Ученик('+studSum+')</th><th width="100px">сумма + </th><th width="100px">13.12 +</th><th width="100px">13.12 МО</th>'+elemYes.innerHTML;
 }
 
 
@@ -43,10 +66,19 @@ function test(){
 	addValue("ATT",1);
 	updateScreen();
 }
-
+// Нажатие на Закончить отмечать присутствующих
+function finishAttend(){
+	clearInterval(attendInterval);
+	var element = document.getElementById("finishAttend");
+    element.parentNode.removeChild(element);
+    document.getElementById('buttons').hidden = false;
+}
 // Функции, обрабатывающие нажатие кнопок
+function addAtt(){
+	addValue("ATT",1);
+}
 function addLatecomer(){
-	addValue("ATT","оп");
+	addValue("ATT",-1);
 }
 function addMarkMO(){
 	var x = prompt("Введите оценку", 5);
@@ -54,8 +86,6 @@ function addMarkMO(){
 	delete x;
 }
 function addBonus(BON){
-	var x = GroupData.dates[curDate]["BON"][retID()];
-	x += BON;
-	addValue("BON",x);
-	delete x;
+	groupData.dates[curDate]["BON"][retID()] += BON;
+	updateScreen();
 }
