@@ -18,22 +18,23 @@
     </head>
 <body style="font-family:'Trebuchet MS', Helvetica, sans-serif;">
 	<script src="TPA-func.js"></script>
+	<!-- _______________________ -->
 	<div style="position: relative; width: 500px; margin: 0 auto;">
 		<div style="width:100%;height:100px;font-size:25px;line-height:50px; text-align: center" id="header">
 			7 Б - 
 		</div>
-		<div style="width:100%;height:50px;font-size:25px;line-height:50px; text-align: center">
+		<div style="width:100%;height:100px;font-size:25px;line-height:50px; text-align: center">
 			<div class="uk-button-group">
-			<button class="uk-button" onclick="" id="">Добавить опоздавшего</button>
-			<button class="uk-button" onclick="" id="">Оценить монологический ответ</button>
+			<button class="uk-button" onclick="addLatecomer()" id="">Добавить опоздавшего</button>
+			<button class="uk-button" onclick="addMarkMO()" id="">Оценить монологический ответ</button>
 			<button class="uk-button" onclick="" id="">Закончить урок</button>
 			</div>
 			<div class="uk-button-group">
-			<button class="uk-button" onclick="" id="">+1</button>
-			<button class="uk-button" onclick="" id="">+2</button>
-			<button class="uk-button" onclick="" id="">+3</button>
-			<button class="uk-button" onclick="" id="">+4</button>
-			<button class="uk-button" onclick="" id="">+5</button>
+			<button class="uk-button" onclick="addBonus(1)" id="">+1</button>
+			<button class="uk-button" onclick="addBonus(2)" id="">+2</button>
+			<button class="uk-button" onclick="addBonus(3)" id="">+3</button>
+			<button class="uk-button" onclick="addBonus(4)" id="">+4</button>
+			<button class="uk-button" onclick="addBonus(5)" id="">+5</button>
 			</div>
 		</div>
 	</div>
@@ -65,4 +66,9 @@
 		</table>
 	</div>
 	</div>
+	
+	<div id="testScreen"></div>
+	<script>
+		updateScreen();
+	</script>
   </html>
