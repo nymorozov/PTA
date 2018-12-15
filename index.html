@@ -18,22 +18,25 @@
     </head>
 <body style="font-family:'Trebuchet MS', Helvetica, sans-serif;">
 	<script src="TPA-func.js"></script>
+	<!-- _______________________ -->
 	<div style="position: relative; width: 500px; margin: 0 auto;">
 		<div style="width:100%;height:100px;font-size:25px;line-height:50px; text-align: center" id="header">
 			7 Б - 
-		</div>
-		<div style="width:100%;height:50px;font-size:25px;line-height:50px; text-align: center">
+		</div> 
+		<button class="uk-button" onclick="finishAttend()" id="finishAttend">
+			Закончить отмечать присутствующих</button>
+		<div style="width:100%;height:100px;font-size:25px;line-height:50px; text-align: center" id="buttons" hidden="true">
 			<div class="uk-button-group">
-			<button class="uk-button" onclick="" id="">Добавить опоздавшего</button>
-			<button class="uk-button" onclick="" id="">Оценить монологический ответ</button>
-			<button class="uk-button" onclick="" id="">Закончить урок</button>
+			<button class="uk-button" onclick="addLatecomer()" id="">Добавить опоздавшего</button>
+			<button class="uk-button" onclick="addMarkMO()" id="">Оценить монологический ответ</button>
+			<button class="uk-button" onclick="finishLesson()" id="">Закончить урок</button>
 			</div>
 			<div class="uk-button-group">
-			<button class="uk-button" onclick="" id="">+1</button>
-			<button class="uk-button" onclick="" id="">+2</button>
-			<button class="uk-button" onclick="" id="">+3</button>
-			<button class="uk-button" onclick="" id="">+4</button>
-			<button class="uk-button" onclick="" id="">+5</button>
+			<button class="uk-button" onclick="addBonus(1)" id="">+1</button>
+			<button class="uk-button" onclick="addBonus(2)" id="">+2</button>
+			<button class="uk-button" onclick="addBonus(3)" id="">+3</button>
+			<button class="uk-button" onclick="addBonus(4)" id="">+4</button>
+			<button class="uk-button" onclick="addBonus(5)" id="">+5</button>
 			</div>
 		</div>
 	</div>
@@ -41,28 +44,18 @@
 	<div class="uk-panel uk-width-1-1 uk-margin-top uk-container-center"> 	
 		<table width="100%" class="uk-table uk-table-hover">
 			<thead id="attendYes">
-				<tr>
-				<th width="100%">Ученик(Х шт)</th>
-				<th width="100px">сумма + </th>
-				<th width="100px">13.12 +</th>
-				<th width="100px">13.12 МО</th>
-				</tr>
-				<tr>
-				<td width="100%">Anderson</th>
-				<td width="100px"></th>
-				<td width="100px"></th>
-				<td width="100px"></th>
-				</tr>
 			</thead>
 			<tfoot id="attendNo">
-				<tr>
-				<td width="100%">Smith</th>
-				<td width="100px"></th>
-				<td width="100px"></th>
-				<td width="100px"></th>
-				</tr>
 			</tfoot>
 		</table>
 	</div>
 	</div>
+	
+	<div id="testScreen"></div>
+	<script>
+		window.onload = function(){
+			// Set current date in header
+			document.getElementById('header').innerHTML += curDate;
+		}
+	</script>
   </html>
