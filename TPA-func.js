@@ -7,22 +7,7 @@ UIDs = {
    0x000000: 0,
    0x1f1f1f: 1
 }
-groupData = {
-   "names": [
-       "Ерохин",
-       "Петунина"
-   ],
-   "curBonus" : [
-	   2,3
-   ],
-   "dates": {
-       "13-12-2018": {
-	       "ATT":[3,1],
-	       "BON":[1,2],
-	       "MO":["",""]
-       }       
-   }
-}
+
 groupData.dates[curDate] = {"ATT":[],"BON":[],"MO":[]};
 for(var i = 0; i < groupData.names.length; i++) {
     groupData.dates[curDate].ATT.push(0);
