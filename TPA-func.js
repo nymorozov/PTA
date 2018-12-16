@@ -15,10 +15,8 @@ for(var i = 0; i < groupData.names.length; i++) {
     groupData.dates[curDate].BON.push(0);
     groupData.dates[curDate].MO.push("");
 }
-marksList = [];
-function add2MarkList(ID,MARK){
-	marksList.push(groupData.names[ID]+" - "+MARK);
-}
+marksList = {"MO":[],"BON":[]};
+
 
 function updateScreen(){
 	var studSum = 0;
@@ -41,11 +39,17 @@ function updateScreen(){
 	// Вставлено в конце, чтобы счетчик работал
 	elemYes.innerHTML = '<tr><th width="50%">Ученик('+studSum+')</th><th width="100px">прошлые + </th><th width="100px">'+date+'\n+</th><th width="100px">'+date+'\nМО</th>'+elemYes.innerHTML;
 }
-function showMarksList(){
-	if(marksList.length){
-		alert(marksList);
+function showMarksList(){	
+	var alertMsg = '';
+	if(marksList['MO'].length){
+		alertMsg += 'Монологический ответ:\n';
+		for(i in marksList['MO']) alertMsg += (marksList['MO'][i]+'\n');
 	}
-	
+	if(marksList['BON'].length){
+		alertMsg += '\nРабота на уроке:\n';
+		for(i in marksList['BON']) alertMsg += (marksList['BON'][i]+'\n');
+	}
+	alert(alertMsg);
 }
 
 // Нажатие на Закончить отмечать присутствующих
@@ -97,6 +101,7 @@ function addLatecomer(){
 }
 function addMarkMO(){
 	var x = prompt("Введите оценку", 5);
+	var idbuf;
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', 'wait4NFC', true);
 	xhr.onreadystatechange = function() {
@@ -108,14 +113,14 @@ function addMarkMO(){
 			if(xhr.status != 200){
 				alert(xhr.status+':'+xhr.statusText);
 			} else {
+				marksList["MO"].push(groupData.names[xhr.responseText]+" - "+x);
 				groupData.dates[curDate]["MO"][xhr.responseText] = x;
 				updateScreen();
 			}
 		}
 	}
 	xhr.send();
-	add2MarkList(idbuf,x);
-	delete x;
+	delete x,idbuf;
 }
 function addBonus(BON){
 	var xhr = new XMLHttpRequest();
@@ -144,11 +149,29 @@ function finishLesson(){
 		if(item >= 5) {
 			groupData.dates[curDate]["BON"][i] = 5;
 			arr[i] = item%5;
-			add2MarkList(i,5);
+			marksList["BON"].push(groupData.names[i]+" - "+5);
 		} else{
 			groupData.dates[curDate]["BON"][i] = "";
 		}
 	});
 	showMarksList();
 	updateScreen();
+////////////////////////////////// Sending data to server ///////////////////////////////
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'todayData', true);
+	xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				output.innerHTML = 'Нет связи с сервером';
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				
+			}
+		}
+	}
+	xhr.send(JSON.stringify(groupData));
 }

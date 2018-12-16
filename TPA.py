@@ -1,4 +1,4 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, request
 
 app = Flask('TPA')
 group = '7b'
@@ -20,5 +20,11 @@ def NFC():
     print('Enter student number: ')
     id = input()
     return str(id)
+
+@app.route('/todayData', methods=['POST'])
+def save():
+    data = request.get_json()
+    print(data)
+    return 'Received !' 
 
 app.run(debug=True, port=3000, host='0.0.0.0')
