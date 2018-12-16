@@ -4,8 +4,9 @@ var curDate = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
 date = date.getDate()+"."+(date.getMonth()+1)
 
 UIDs = {
-   0x000000: 0,
-   0x1f1f1f: 1
+   0x000001: 0,
+   0x000002: 1,
+   0x000003: 2,
 }
 
 groupData.dates[curDate] = {"ATT":[],"BON":[],"MO":[]};
@@ -14,22 +15,9 @@ for(var i = 0; i < groupData.names.length; i++) {
     groupData.dates[curDate].BON.push(0);
     groupData.dates[curDate].MO.push("");
 }
-
 marksList = [];
 function add2MarkList(ID,MARK){
 	marksList.push(groupData.names[ID]+" - "+MARK);
-}
-
-// Set attendance counting til button is pressed
-var attendInterval = setInterval(function(){addAtt()}, 1000);
-
-function wait4NFC() {
-	var x = prompt("Enter UID", 0x000000);
-	return Number(x);
-}
-
-function retID() {
-	return UIDs[wait4NFC()];
 }
 
 function updateScreen(){
@@ -39,6 +27,7 @@ function updateScreen(){
 	elemYes.innerHTML = '';
 	elemNo.innerHTML = '';
 	groupData.dates[curDate]["ATT"].forEach( function(item, i, arr) {
+		//alert(groupData.names[i]+' - '+item);
 		if(item || item==-1) {
 			var name = groupData.names[i]
 			if(item==-1) name+="(оп)";
@@ -58,39 +47,94 @@ function showMarksList(){
 	}
 	
 }
-function test(){
-	addValue("ATT",1);
-	updateScreen();
-}
+
 // Нажатие на Закончить отмечать присутствующих
 function finishAttend(){
-	clearInterval(attendInterval);
 	var element = document.getElementById("finishAttend");
-    element.parentNode.removeChild(element);
-    document.getElementById('buttons').hidden = false;
+	element.parentNode.removeChild(element);
+	document.getElementById('buttons').hidden = false;
+	delete element;
+}
+function addAtt(){
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'wait4NFC', true);
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				output.innerHTML = 'Нет связи с сервером';
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				groupData.dates[curDate]["ATT"][xhr.responseText] = 1;
+				updateScreen();
+				if(document.getElementById("finishAttend") != null) addAtt();
+			}
+		}
+	}
+	xhr.send();
 }
 // Функции, обрабатывающие нажатие кнопок
-function addAtt(){
-	groupData.dates[curDate]["ATT"][retID()] = 1;
-	updateScreen();
-}
 function addLatecomer(){
-	groupData.dates[curDate]["ATT"][retID()] = -1;
-	updateScreen();
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'wait4NFC', true);
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				output.innerHTML = 'Нет связи с сервером';
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				groupData.dates[curDate]["ATT"][xhr.responseText] = -1;
+				updateScreen();
+			}
+		}
+	}
+	xhr.send();
 }
 function addMarkMO(){
 	var x = prompt("Введите оценку", 5);
-	var idbuf = retID();
-	groupData.dates[curDate]["MO"][idbuf] = Number(x);
-	updateScreen();
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'wait4NFC', true);
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				output.innerHTML = 'Нет связи с сервером';
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				groupData.dates[curDate]["MO"][xhr.responseText] = x;
+				updateScreen();
+			}
+		}
+	}
+	xhr.send();
 	add2MarkList(idbuf,x);
-	delete x,idbuf;
+	delete x;
 }
 function addBonus(BON){
-	idbuf = retID();
-	groupData.dates[curDate]["BON"][idbuf] = Number(groupData.dates[curDate]["BON"][idbuf])+BON;
-	updateScreen();
-	delete idbuf;
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'wait4NFC', true);
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				output.innerHTML = 'Нет связи с сервером';
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				groupData.dates[curDate]["BON"][xhr.responseText] = Number(groupData.dates[curDate]["BON"][xhr.responseText])+BON;
+				updateScreen();
+			}
+		}
+	}
+	xhr.send();
 }
 function finishLesson(){
 	groupData.dates[curDate]["BON"].forEach( function(item, i, arr) {
