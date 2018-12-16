@@ -1,4 +1,4 @@
-// Set currnet date
+// Set current date
 var date = new Date();
 var curDate = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
 date = date.getDate()+"."+(date.getMonth()+1)
@@ -8,6 +8,26 @@ UIDs = {
    0x000002: 1,
    0x000003: 2,
 }
+
+////////////// Ask 4 Group Data //////////////
+var groupData;
+var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'getData', true);
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				output.innerHTML = 'Нет связи с сервером';
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				groupData = JSON.parse(xhr.responseText);
+			}
+		}
+	}
+	xhr.send();
+//////////////////////////////////////////
 
 groupData.dates[curDate] = {"ATT":[],"BON":[],"MO":[]};
 for(var i = 0; i < groupData.names.length; i++) {
@@ -40,7 +60,7 @@ function updateScreen(){
 	elemYes.innerHTML = '<tr><th width="50%">Ученик('+studSum+')</th><th width="100px">прошлые + </th><th width="100px">'+date+'\n+</th><th width="100px">'+date+'\nМО</th>'+elemYes.innerHTML;
 }
 function showMarksList(){	
-	var alertMsg = '';
+	/*var alertMsg = '';
 	if(marksList['MO'].length){
 		alertMsg += 'Монологический ответ:\n';
 		for(i in marksList['MO']) alertMsg += (marksList['MO'][i]+'\n');
@@ -49,7 +69,20 @@ function showMarksList(){
 		alertMsg += '\nРабота на уроке:\n';
 		for(i in marksList['BON']) alertMsg += (marksList['BON'][i]+'\n');
 	}
-	alert(alertMsg);
+	alert(alertMsg);*/
+	document.getElementById('buttons').hidden = true;
+	document.getElementById('groupTable').hidden = true;
+	var markStr = '';
+	if(marksList['MO'].length){
+		markStr += '<h3>Монологический ответ:</h3>';
+		for(i in marksList['MO']) markStr += (marksList['MO'][i]+'</br>');
+	}
+	if(marksList['BON'].length){
+		markStr += '<h3>Работа на уроке:</h3>';
+		for(i in marksList['BON']) markStr += (marksList['BON'][i]+'</br>');
+	}
+	if(markStr == '') markStr='Оценок за монологический ответ и работу на уроке пока нет';
+	document.getElementById('marksList').innerHTML = markStr;
 }
 
 // Нажатие на Закончить отмечать присутствующих

@@ -1,4 +1,6 @@
 from flask import Flask, send_file, request
+from datetime import datetime
+import os
 
 app = Flask('TPA')
 group = '7b'
@@ -6,6 +8,13 @@ group = '7b'
 @app.route('/')
 def index():
     return send_file('index.html')
+
+@app.route('/getData')
+def getData():
+    fpath = group+'/'+group+'-groupData'
+    with open(fpath, 'r') as myfile:
+        data = myfile.read()
+    return data
 
 @app.route('/<filename>')
 def get_file(filename):
@@ -25,6 +34,12 @@ def NFC():
 def save():
     data = request.get_json()
     print(data)
-    return 'Received !' 
+    fpath = group+'/'+group+'-groupData'
+    nfilepath = group+'/'+group+'-groupData-'+datetime.strftime(datetime.now(), "%d-%m-%Y")
+    os.rename(fpath, nfilepath)
+    f = open(fpath, 'w')
+    f.write(request.data)
+    f.close()
+    return request.data 
 
 app.run(debug=True, port=3000, host='0.0.0.0')
