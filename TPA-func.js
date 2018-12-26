@@ -9,34 +9,9 @@ UIDs = {
    0x000003: 2,
 }
 
-////////////// Ask 4 Group Data //////////////
+
 var groupData;
-var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'getData', true);
-	xhr.onreadystatechange = function() {
-		console.log(xhr.readyState, xhr.response);
-		if (xhr.readyState === 4) {
-			if (xhr.response === '') {
-				output.innerHTML = 'Нет связи с сервером';
-			}
-			if(xhr.status != 200){
-				alert(xhr.status+':'+xhr.statusText);
-			} else {
-				groupData = JSON.parse(xhr.responseText);
-			}
-		}
-	}
-	xhr.send();
-//////////////////////////////////////////
-
-groupData.dates[curDate] = {"ATT":[],"BON":[],"MO":[]};
-for(var i = 0; i < groupData.names.length; i++) {
-    groupData.dates[curDate].ATT.push(0);
-    groupData.dates[curDate].BON.push(0);
-    groupData.dates[curDate].MO.push("");
-}
 marksList = {"MO":[],"BON":[]};
-
 
 function updateScreen(){
 	var studSum = 0;
@@ -104,6 +79,10 @@ function addAtt(){
 			if(xhr.status != 200){
 				alert(xhr.status+':'+xhr.statusText);
 			} else {
+alert(curDate);
+alert(JSON.stringify(groupData.dates));
+alert(JSON.stringify(groupData.dates[curDate]));
+alert(JSON.stringify(groupData.dates[curDate]["ATT"]));
 				groupData.dates[curDate]["ATT"][xhr.responseText] = 1;
 				updateScreen();
 				if(document.getElementById("finishAttend") != null) addAtt();
@@ -175,6 +154,7 @@ function addBonus(BON){
 	xhr.send();
 }
 function finishLesson(){
+	if(confirm("Вы уверены, что хотите закончить урок?")){
 	groupData.dates[curDate]["BON"].forEach( function(item, i, arr) {
 		groupData.curBonus[i] += item; 
 	});
@@ -207,4 +187,33 @@ function finishLesson(){
 		}
 	}
 	xhr.send(JSON.stringify(groupData));
-}
+}}
+
+////////////// Ask 4 Group Data //////////////
+var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'getData', true);
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				output.innerHTML = 'Нет связи с сервером';
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				groupData = JSON.parse(xhr.responseText);
+				groupData.dates[curDate] = {"ATT":[],"BON":[],"MO":[]};
+				for(var i = 0; i < groupData.names.length; i++) {
+				    groupData.dates[curDate].ATT.push(0);
+				    groupData.dates[curDate].BON.push(0);
+				    groupData.dates[curDate].MO.push("");
+				}
+				updateScreen();
+				// Set attendance counting til button is pressed
+				addAtt();
+			}
+				
+		}
+	}
+	xhr.send();
+//////////////////////////////////////////
