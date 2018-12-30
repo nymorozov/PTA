@@ -3,15 +3,11 @@ var date = new Date();
 var curDate = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
 date = date.getDate()+"."+(date.getMonth()+1)
 
-UIDs = {
-   0x000001: 0,
-   0x000002: 1,
-   0x000003: 2,
-}
-
-
+var header = '7 Б - '+curDate;
 var groupData;
 marksList = {"MO":[],"BON":[]};
+var state;
+var BONUS;
 
 function updateScreen(){
 	var studSum = 0;
@@ -33,6 +29,8 @@ function updateScreen(){
 	})
 	// Вставлено в конце, чтобы счетчик работал
 	elemYes.innerHTML = '<tr><th width="50%">Ученик('+studSum+')</th><th width="100px">прошлые + </th><th width="100px">'+date+'\n+</th><th width="100px">'+date+'\nМО</th>'+elemYes.innerHTML;
+	if(state == 1) 	document.getElementById('header').innerHTML = header+' - Отмечаем присутствие';
+	else 	document.getElementById('header').innerHTML = header;
 }
 function showMarksList(){	
 	/*var alertMsg = '';
@@ -66,92 +64,23 @@ function finishAttend(){
 	element.parentNode.removeChild(element);
 	document.getElementById('buttons').hidden = false;
 	delete element;
+	state = 0;
+	updateScreen();	
+	UIkit.notification('My message');	
 }
 function addAtt(){
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'wait4NFC', true);
-	xhr.onreadystatechange = function() {
-		console.log(xhr.readyState, xhr.response);
-		if (xhr.readyState === 4) {
-			if (xhr.response === '') {
-				output.innerHTML = 'Нет связи с сервером';
-			}
-			if(xhr.status != 200){
-				alert(xhr.status+':'+xhr.statusText);
-			} else {
-alert(curDate);
-alert(JSON.stringify(groupData.dates));
-alert(JSON.stringify(groupData.dates[curDate]));
-alert(JSON.stringify(groupData.dates[curDate]["ATT"]));
-				groupData.dates[curDate]["ATT"][xhr.responseText] = 1;
-				updateScreen();
-				if(document.getElementById("finishAttend") != null) addAtt();
-			}
-		}
-	}
-	xhr.send();
+	state = 1;
 }
 // Функции, обрабатывающие нажатие кнопок
 function addLatecomer(){
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'wait4NFC', true);
-	xhr.onreadystatechange = function() {
-		console.log(xhr.readyState, xhr.response);
-		if (xhr.readyState === 4) {
-			if (xhr.response === '') {
-				output.innerHTML = 'Нет связи с сервером';
-			}
-			if(xhr.status != 200){
-				alert(xhr.status+':'+xhr.statusText);
-			} else {
-				groupData.dates[curDate]["ATT"][xhr.responseText] = -1;
-				updateScreen();
-			}
-		}
-	}
-	xhr.send();
+	state = 2;
 }
 function addMarkMO(){
-	var x = prompt("Введите оценку", 5);
-	var idbuf;
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'wait4NFC', true);
-	xhr.onreadystatechange = function() {
-		console.log(xhr.readyState, xhr.response);
-		if (xhr.readyState === 4) {
-			if (xhr.response === '') {
-				output.innerHTML = 'Нет связи с сервером';
-			}
-			if(xhr.status != 200){
-				alert(xhr.status+':'+xhr.statusText);
-			} else {
-				marksList["MO"].push(groupData.names[xhr.responseText]+" - "+x);
-				groupData.dates[curDate]["MO"][xhr.responseText] = x;
-				updateScreen();
-			}
-		}
-	}
-	xhr.send();
-	delete x,idbuf;
+	state = 3;	
 }
 function addBonus(BON){
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'wait4NFC', true);
-	xhr.onreadystatechange = function() {
-		console.log(xhr.readyState, xhr.response);
-		if (xhr.readyState === 4) {
-			if (xhr.response === '') {
-				output.innerHTML = 'Нет связи с сервером';
-			}
-			if(xhr.status != 200){
-				alert(xhr.status+':'+xhr.statusText);
-			} else {
-				groupData.dates[curDate]["BON"][xhr.responseText] = Number(groupData.dates[curDate]["BON"][xhr.responseText])+BON;
-				updateScreen();
-			}
-		}
-	}
-	xhr.send();
+	state = 4;
+	BONUS = BON;
 }
 function finishLesson(){
 	if(confirm("Вы уверены, что хотите закончить урок?")){
@@ -177,7 +106,7 @@ function finishLesson(){
 		console.log(xhr.readyState, xhr.response);
 		if (xhr.readyState === 4) {
 			if (xhr.response === '') {
-				output.innerHTML = 'Нет связи с сервером';
+				console.log('Нет связи с сервером');
 			}
 			if(xhr.status != 200){
 				alert(xhr.status+':'+xhr.statusText);
@@ -196,7 +125,7 @@ var xhr = new XMLHttpRequest();
 		console.log(xhr.readyState, xhr.response);
 		if (xhr.readyState === 4) {
 			if (xhr.response === '') {
-				output.innerHTML = 'Нет связи с сервером';
+				console.log('Нет связи с сервером');
 			}
 			if(xhr.status != 200){
 				alert(xhr.status+':'+xhr.statusText);
@@ -208,12 +137,37 @@ var xhr = new XMLHttpRequest();
 				    groupData.dates[curDate].BON.push(0);
 				    groupData.dates[curDate].MO.push("");
 				}
-				updateScreen();
 				// Set attendance counting til button is pressed
 				addAtt();
+				updateScreen();
 			}
 				
 		}
 	}
 	xhr.send();
 //////////////////////////////////////////
+function changeDataW(IDNUMBER) {
+	switch(state){
+	case 0:
+		break;
+	case 1:
+		groupData.dates[curDate]["ATT"][IDNUMBER] = 1;
+		break;
+	case 2:
+		groupData.dates[curDate]["ATT"][IDNUMBER] = -1;
+		state = 0;
+		break;
+	case 3:
+		var x = prompt("Введите оценку", 5);
+		marksList["MO"].push(groupData.names[IDNUMBER]+" - "+x);
+		groupData.dates[curDate]["MO"][IDNUMBER] = x;
+		delete x;
+		state = 0;
+		break;
+	case 4:
+		groupData.dates[curDate]["BON"][IDNUMBER] = Number(groupData.dates[curDate]["BON"][IDNUMBER])+BONUS;
+		state = 0;
+		break;		
+	}
+	updateScreen();	
+}
