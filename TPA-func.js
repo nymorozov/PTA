@@ -1,9 +1,16 @@
 // Set current date
 var date = new Date();
-var curDate = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
-date = date.getDate()+"."+(date.getMonth()+1)
+var curDate = "";
+if(date.getDate() < 10) curDate += '0'+date.getDate()+".";
+	else curDate += (date.getMonth()+1)+".";
+if(date.getMonth() < 9) curDate += '0'+(date.getMonth()+1)+".";
+	else curDate += (date.getMonth()+1)+".";
+curDate += (date.getFullYear()-2000);
 
-var header = '7 Б - '+curDate;
+date = curDate.slice(0,-3);
+
+var notifTimer = 3000;
+var grName = ''
 var groupData;
 marksList = {"MO":[],"BON":[]};
 var state;
@@ -20,7 +27,7 @@ function updateScreen(){
 		if(item || item==-1) {
 			var name = groupData.names[i]
 			if(item==-1) name+="(оп)";
-			elemYes.innerHTML += '<tr><td>'+name+'</td><td>'+groupData.curBonus[i]+'</td><td>'+groupData.dates[curDate]["BON"][i]+'</td><td>'+groupData.dates[curDate]["MO"][i]+'</td></tr>';
+			elemYes.innerHTML += '<tr><td>'+name+'</td><td>+'+groupData.curBonus[i]+'</td><td>'+groupData.dates[curDate]["BON"][i]+'</td><td>'+groupData.dates[curDate]["MO"][i]+'</td></tr>';
 			studSum++;
 		}						
 		else if(!item) {
@@ -28,9 +35,9 @@ function updateScreen(){
 		}
 	})
 	// Вставлено в конце, чтобы счетчик работал
-	elemYes.innerHTML = '<tr><th width="50%">Ученик('+studSum+')</th><th width="100px">прошлые + </th><th width="100px">'+date+'\n+</th><th width="100px">'+date+'\nМО</th>'+elemYes.innerHTML;
-	if(state == 1) 	document.getElementById('header').innerHTML = header+' - Отмечаем присутствие';
-	else 	document.getElementById('header').innerHTML = header;
+	elemYes.innerHTML = '<tr><th width="50%">Ученик ('+studSum+')</th><th width="100px">прошлые бонусы</th><th width="100px">бонусы</br>'+date+'</th><th width="100px">МО</br>'+date+'</th>'+elemYes.innerHTML;
+	if(state == 1) 	document.getElementById('header').innerHTML = grName+' - '+curDate+' - Отмечаем присутствие';
+	else 	document.getElementById('header').innerHTML = grName+' - '+curDate;
 }
 function showMarksList(){	
 	/*var alertMsg = '';
@@ -43,8 +50,7 @@ function showMarksList(){
 		for(i in marksList['BON']) alertMsg += (marksList['BON'][i]+'\n');
 	}
 	alert(alertMsg);*/
-	document.getElementById('buttons').hidden = true;
-	document.getElementById('groupTable').hidden = true;
+	
 	var markStr = '';
 	if(marksList['MO'].length){
 		markStr += '<h3>Монологический ответ:</h3>';
@@ -66,21 +72,25 @@ function finishAttend(){
 	delete element;
 	state = 0;
 	updateScreen();	
-	UIkit.notification('My message');	
+	UIkit.notification("<span uk-icon='icon: check'></span>Закончили отмечать присутствующих", {timeout: notifTimer});	
 }
 function addAtt(){
 	state = 1;
 }
 // Функции, обрабатывающие нажатие кнопок
 function addLatecomer(){
+	UIkit.notification("Добавим опоздавшего", {timeout: notifTimer});	
 	state = 2;
 }
 function addMarkMO(){
+	UIkit.notification("Оценим монологический ответ", {timeout: notifTimer});
 	state = 3;	
 }
 function addBonus(BON){
-	state = 4;
 	BONUS = BON;
+	if(BON > 0) BON = '+'+BON;
+	UIkit.notification("Добавим "+BON, {timeout: notifTimer});
+	state = 4;	
 }
 function finishLesson(){
 	if(confirm("Вы уверены, что хотите закончить урок?")){
@@ -96,6 +106,8 @@ function finishLesson(){
 			groupData.dates[curDate]["BON"][i] = "";
 		}
 	});
+	document.getElementById('buttons').hidden = true;
+	document.getElementById('groupTable').hidden = true;
 	showMarksList();
 	updateScreen();
 ////////////////////////////////// Sending data to server ///////////////////////////////
@@ -119,7 +131,8 @@ function finishLesson(){
 }}
 
 ////////////// Ask 4 Group Data //////////////
-var xhr = new XMLHttpRequest();
+function askForGrData() {	
+	var xhr = new XMLHttpRequest();
 	xhr.open('GET', 'getData', true);
 	xhr.onreadystatechange = function() {
 		console.log(xhr.readyState, xhr.response);
@@ -145,6 +158,7 @@ var xhr = new XMLHttpRequest();
 		}
 	}
 	xhr.send();
+}
 //////////////////////////////////////////
 function changeDataW(IDNUMBER) {
 	switch(state){
@@ -163,11 +177,37 @@ function changeDataW(IDNUMBER) {
 		groupData.dates[curDate]["MO"][IDNUMBER] = x;
 		delete x;
 		state = 0;
+		showMarksList();
+		UIkit.notification(groupData.names[IDNUMBER]+" получает "+x+" за монологический ответ.", {timeout: notifTimer});	
 		break;
 	case 4:
 		groupData.dates[curDate]["BON"][IDNUMBER] = Number(groupData.dates[curDate]["BON"][IDNUMBER])+BONUS;
 		state = 0;
+		UIkit.notification(groupData.names[IDNUMBER]+" получает "+BONUS+" к бонусным баллам.", {timeout: notifTimer});
 		break;		
 	}
 	updateScreen();	
+}
+////////////////////////////////////////////
+function groupPick(GRNAME){
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'grName'+GRNAME, true);
+	xhr.onreadystatechange = function() {
+		console.log(xhr.readyState, xhr.response);
+		if (xhr.readyState === 4) {
+			if (xhr.response === '') {
+				console.log('Нет связи с сервером');
+			}
+			if(xhr.status != 200){
+				alert(xhr.status+':'+xhr.statusText);
+			} else {
+				grName = document.getElementById(GRNAME).innerHTML;
+				document.getElementById('grNamePick').hidden = true;
+				document.getElementById('main').hidden = false;
+				askForGrData();
+			}
+				
+		}
+	}
+	xhr.send();
 }

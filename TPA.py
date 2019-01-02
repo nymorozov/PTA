@@ -6,17 +6,26 @@ import time
 
 app = Flask('TPA')
 socketio = SocketIO(app)
-group = '7b'
+group = ''
+UIDs = []
 mainip = ''
 
-fpath = group+'/'+group+'-groupUIDs'
-with open(fpath, 'r') as myfile:
-    data = myfile.read()
-UIDs = data.split(';\n')
+
 
 @app.route('/')
 def index():
     return send_file('index.html')
+
+@app.route('/grName<GRNAME>')
+def grname(GRNAME):
+    global group
+    group = GRNAME
+    fpath = group+'/'+group+'-groupUIDs'
+    with open(fpath, 'r') as myfile:
+       data = myfile.read()
+    global UIDs
+    UIDs = data.split(';\n')
+    return 'Working w/'+group
 
 @app.route('/getData')
 def getData():
@@ -29,6 +38,14 @@ def getData():
 @app.route('/<filename>')
 def get_file(filename):
     return send_file(filename)
+
+@app.route('/css/<filename>')
+def get_cssfile(filename):
+    return send_file('css/'+filename)
+
+@app.route('/js/<filename>')
+def get_jsfile(filename):
+    return send_file('js/'+filename)
 
 @app.route('/todayData', methods=['POST'])
 def save():
