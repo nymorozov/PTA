@@ -15,6 +15,7 @@ var groupData;
 marksList = {"MO":[],"BON":[]};
 var state;
 var BONUS;
+var curLessonData;
 
 function updateScreen(){
 	var studSum = 0;
@@ -22,12 +23,12 @@ function updateScreen(){
 	var elemNo = document.getElementById('attendNo');
 	elemYes.innerHTML = '';
 	elemNo.innerHTML = '';
-	groupData.dates[curDate]["ATT"].forEach( function(item, i, arr) {
+	curLessonData["ATT"].forEach( function(item, i, arr) {
 		//alert(groupData.names[i]+' - '+item);
 		if(item || item==-1) {
 			var name = groupData.names[i]
 			if(item==-1) name+="(оп)";
-			elemYes.innerHTML += '<tr><td>'+name+'</td><td>+'+groupData.curBonus[i]+'</td><td>'+groupData.dates[curDate]["BON"][i]+'</td><td>'+groupData.dates[curDate]["MO"][i]+'</td></tr>';
+			elemYes.innerHTML += '<tr><td>'+name+'</td><td>+'+groupData.curBonus[i]+'</td><td>'+curLessonData["BON"][i]+'</td><td>'+curLessonData["MO"][i]+'</td></tr>';
 			studSum++;
 		}						
 		else if(!item) {
@@ -94,16 +95,16 @@ function addBonus(BON){
 }
 function finishLesson(){
 	if(confirm("Вы уверены, что хотите закончить урок?")){
-	groupData.dates[curDate]["BON"].forEach( function(item, i, arr) {
+	curLessonData["BON"].forEach( function(item, i, arr) {
 		groupData.curBonus[i] += item; 
 	});
 	groupData.curBonus.forEach( function(item, i, arr) {
 		if(item >= 5) {
-			groupData.dates[curDate]["BON"][i] = 5;
+			curLessonData["BON"][i] = 5;
 			arr[i] = item%5;
 			marksList["BON"].push(groupData.names[i]+" - "+5);
 		} else{
-			groupData.dates[curDate]["BON"][i] = "";
+			curLessonData["BON"][i] = "";
 		}
 	});
 	document.getElementById('buttons').hidden = true;
@@ -144,11 +145,12 @@ function askForGrData() {
 				alert(xhr.status+':'+xhr.statusText);
 			} else {
 				groupData = JSON.parse(xhr.responseText);
-				groupData.dates[curDate] = {"ATT":[],"BON":[],"MO":[]};
+				groupData.dates.push({"date":curDate,"ATT":[],"BON":[],"MO":[]});
+				curLessonData = groupData.dates[groupData.dates.length - 1];
 				for(var i = 0; i < groupData.names.length; i++) {
-				    groupData.dates[curDate].ATT.push(0);
-				    groupData.dates[curDate].BON.push(0);
-				    groupData.dates[curDate].MO.push("");
+				    curLessonData.ATT.push(0);
+				    curLessonData.BON.push(0);
+				    curLessonData.MO.push("");
 				}
 				// Set attendance counting til button is pressed
 				addAtt();
@@ -165,23 +167,23 @@ function changeDataW(IDNUMBER) {
 	case 0:
 		break;
 	case 1:
-		groupData.dates[curDate]["ATT"][IDNUMBER] = 1;
+		curLessonData["ATT"][IDNUMBER] = 1;
 		break;
 	case 2:
-		groupData.dates[curDate]["ATT"][IDNUMBER] = -1;
+		curLessonData["ATT"][IDNUMBER] = -1;
 		state = 0;
 		break;
 	case 3:
 		var x = prompt("Введите оценку", 5);
 		marksList["MO"].push(groupData.names[IDNUMBER]+" - "+x);
-		groupData.dates[curDate]["MO"][IDNUMBER] = x;
+		curLessonData["MO"][IDNUMBER] = x;
 		delete x;
 		state = 0;
 		showMarksList();
 		UIkit.notification(groupData.names[IDNUMBER]+" получает "+x+" за монологический ответ.", {timeout: notifTimer});	
 		break;
 	case 4:
-		groupData.dates[curDate]["BON"][IDNUMBER] = Number(groupData.dates[curDate]["BON"][IDNUMBER])+BONUS;
+		curLessonData["BON"][IDNUMBER] = Number(curLessonData["BON"][IDNUMBER])+BONUS;
 		state = 0;
 		UIkit.notification(groupData.names[IDNUMBER]+" получает "+BONUS+" к бонусным баллам.", {timeout: notifTimer});
 		break;		
